@@ -3,6 +3,7 @@
 #include "vex.h"
 #include "driver-contro.hpp"
 #include "robot-config.hpp"
+#include "auton.h"
 using namespace vex;
 using signature = vision::signature;
 using code = vision::code;
@@ -20,7 +21,18 @@ void pre_auton(void) {
 }
 
 void autonomous(void) {
+  inauton = true;
+  
+  // Choose which autonomous routine to run
+  // AWPRed();  // Uncomment this line to run AWP Red autonomous
+  // AWPBlue(); // Uncomment this line to run AWP Blue autonomous
+  // Red();     // Uncomment this line to run Red autonomous
+  // Blue();    // Uncomment this line to run Blue autonomous
 
+  // For example, to run the AWPRed routine:
+  AWPRed();  // This will execute the turn(90) command defined in that function
+  
+  inauton = false;
 }
 
 int main() {
