@@ -30,24 +30,21 @@ static void MoveDrivetrain() {
 
 }
 
-int intake = 0;
 static void MoveIntake() {
-    Intake.setVelocity(80, pct);
-    if(Controller.ButtonL1.pressing()) {
-        intake += 1;
-
-        if(intake%2 == 1) {
-            Intake.spin(forward);
-        }
-
-        if(intake%2 == 0) {
-            Intake.stop();
-        }
-        wait(150, msec);
-    }
+    // Set intake velocity to maximum speed (100%)
+    Intake.setVelocity(100, pct);
     
-    if(Controller.ButtonL2.pressing()) {
+    // Press and hold L1 to spin intake forward at max speed
+    if(Controller.ButtonL1.pressing()) {
+        Intake.spin(forward);
+    }
+    // Press and hold L2 to spin intake in reverse at max speed
+    else if(Controller.ButtonL2.pressing()) {
         Intake.spin(reverse);
+    }
+    // Stop the intake when neither button is pressed
+    else {
+        Intake.stop();
     }
 }
 
@@ -107,7 +104,7 @@ static void MoveClamp() {
 
 
 void drivercontrol() {
-    Intake.setVelocity(99, pct);
+    // Removed duplicate velocity setting - now handled in MoveIntake function
     while(true){
       MoveDrivetrain();
       MoveIntake();
