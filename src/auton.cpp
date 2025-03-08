@@ -280,3 +280,106 @@ void Blue() {
 void AutonSkills() {
 
 }
+
+void TestPID() {
+    // Initial setup
+    Intake.setVelocity(100, pct);
+  
+    // Step 1: Drive forward to approach the scoring location
+    drive("forward", 20); // Drive forward 20 inches
+  
+    // Step 2: Score a ring using the intake
+    Intake.spin(reverse); // Eject the ring
+    wait(500, msec);
+    Intake.stop();
+  
+    // Step 3: Turn right towards the center tower
+    turn(90); // Turn 90 degrees right
+  
+    // Step 4: Drive forward to touch center tower
+    drive("forward", 15); // Drive forward 15 inches to reach tower
+    wait(300, msec); // Brief wait to ensure contact
+  
+    // Step 5: Back away from tower
+    drive("reverse", 10); // Back up 10 inches
+  
+    // Step 6: Turn towards corner
+    turn(135); // Turn to face corner
+  
+    // Step 7: Drive to corner with mobile goal
+    drive("forward", 25); // Drive to corner
+  
+    // Step 8: Secure the mobile goal using pneumatic
+    P.set(true); // Activate pneumatic to secure the mobile goal
+  
+    // Step 9: Small adjustment to position better in corner
+    drive("forward", 2); // Fine adjustment
+}
+
+// Alternative autonomous function approach (without PID functions)
+void CustomAuton() {
+    // Initial setup
+    Intake.setVelocity(100, pct);
+    LeftDrive.setVelocity(50, pct);
+    RightDrive.setVelocity(50, pct);
+  
+    // Move forward to approach scoring location
+    LeftDrive.spin(forward);
+    RightDrive.spin(forward);
+    wait(2000, msec);  // Time-based movement instead of PID
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+  
+    // Score a ring using the intake
+    Intake.spin(reverse);
+    wait(500, msec);
+    Intake.stop();
+  
+    // Turn right towards the center tower
+    LeftDrive.spin(forward);
+    RightDrive.spin(reverse);
+    wait(1000, msec);  // Time-based turning
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+  
+    // Drive forward to touch center tower
+    LeftDrive.spin(forward);
+    RightDrive.spin(forward);
+    wait(1500, msec);
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+    
+    // Brief wait to ensure contact
+    wait(300, msec);
+  
+    // Back away from tower
+    LeftDrive.spin(reverse);
+    RightDrive.spin(reverse);
+    wait(1000, msec);
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+  
+    // Turn towards corner
+    LeftDrive.spin(forward);
+    RightDrive.spin(reverse);
+    wait(1300, msec);  // ~135 degrees based on timing
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+  
+    // Drive to corner with mobile goal
+    LeftDrive.spin(forward);
+    RightDrive.spin(forward);
+    wait(2500, msec);
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+  
+    // Secure the mobile goal using pneumatic
+    P.set(true);
+  
+    // Optional: small adjustment to position better in corner
+    LeftDrive.spin(forward);
+    RightDrive.spin(forward);
+    wait(200, msec);  // Small movement
+    LeftDrive.stop(brake);
+    RightDrive.stop(brake);
+}
