@@ -24,13 +24,15 @@ void autonomous(void) {
   inauton = true;
   
   // Choose which autonomous routine to run
-  // AWPRed();  // Uncomment this line to run AWP Red autonomous
-  // AWPBlue(); // Uncomment this line to run AWP Blue autonomous
-  // Red();     // Uncomment this line to run Red autonomous
-  // Blue();    // Uncomment this line to run Blue autonomous
-
-  // For example, to run the AWPRed routine:
-  AWPRed();  // This will execute the turn(90) command defined in that function
+  // AWPRed();    // Uncomment this line to run AWP Red autonomous
+  // AWPBlue();   // Uncomment this line to run AWP Blue autonomous
+  // Red();       // Uncomment this line to run Red autonomous
+  // Blue();      // Uncomment this line to run Blue autonomous
+  // AutonSkills(); // Uncomment this line to run Skills autonomous
+  
+  // Choose one of these autonomous functions:
+  TestPID();    // PID-based autonomous (more accurate)
+  // CustomAuton(); // Alternative time-based autonomous (simpler but less accurate)
   
   inauton = false;
 }
