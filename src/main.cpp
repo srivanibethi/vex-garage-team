@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "vex.h"
-#include "driver-control.hpp"
+#include "driver-contro.hpp"
 #include "robot-config.hpp"
 using namespace vex;
 using signature = vision::signature;
@@ -32,6 +32,4 @@ int main() {
   while(true) {
     wait(20, msec);
   }
-  void vexcodeInit(void);
-
 }
