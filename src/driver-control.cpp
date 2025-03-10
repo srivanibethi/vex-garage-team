@@ -51,7 +51,7 @@ static void MoveIntake() {
 
 int arm = 0;
 static void MoveDoinker(){
-  if(Controller.ButtonR1.pressing()) {
+  if(Controller.ButtonX.pressing()) {
     arm += 1;
     if(arm%2 == 1) {
         D.set(true);
@@ -84,7 +84,7 @@ int armPosition = 0;
 static void MoveArm() {
     // Implement arm movement functionality
     // This is a placeholder implementation
-    if(Controller.ButtonX.pressing()) {
+    if(Controller.ButtonR1.pressing()) {
         armPosition += 1;
         // Add actual arm control code here
         wait(150, msec);
@@ -108,6 +108,8 @@ void drivercontrol() {
     while(true){
       MoveDrivetrain();
       MoveIntake();
+      MoveDoinker();
+      MoveMogo();
       MoveArm();
       MoveClamp();
 
@@ -115,4 +117,4 @@ void drivercontrol() {
     }
 }
 
-void vexcodeInit();
+// vexcodeInit() is defined in main.cpp
