@@ -16,7 +16,7 @@ motor MR = motor(PORT7, ratio6_1, false);
 motor BR = motor(PORT9, ratio6_1, true);
 motor_group RightDrive = motor_group(FR, MR, BR);
 
-digital_out D = digital_out(Brain.ThreeWirePort.H);
+digital_out D = digital_out(Brain.ThreeWirePort.E);
 digital_out P = digital_out(Brain.ThreeWirePort.G);
 
 motor Intake1 = motor(PORT5, ratio6_1, true);
