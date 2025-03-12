@@ -23,6 +23,8 @@ motor Intake1 = motor(PORT5, ratio6_1, true);
 motor Intake2 = motor(PORT2, ratio6_1, false);
 motor_group Intake = motor_group(Intake1,Intake2);
 
+motor LadyBrown = motor(PORT11, ratio6_1, false);
+
 inertial Inertial = inertial(PORT6);
 
 void vexcodeInit(void);
