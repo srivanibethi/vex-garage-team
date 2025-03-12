@@ -102,6 +102,24 @@ static void MoveClamp() {
     }
 }
 
+static void MoveLadyBrown() {
+    // Set LadyBrown velocity for operation
+    LadyBrown.setVelocity(100, pct);
+    
+    // Button A - Move lady brown forward
+    if(Controller.ButtonA.pressing()) {
+        LadyBrown.spin(forward);
+    }
+    // Button B - Move lady brown backward
+    else if(Controller.ButtonB.pressing()) {
+        LadyBrown.spin(reverse);
+    }
+    // Stop lady brown when no button is pressed
+    else {
+        LadyBrown.stop();
+    }
+}
+
 
 void drivercontrol() {
     // Removed duplicate velocity setting - now handled in MoveIntake function
@@ -112,6 +130,7 @@ void drivercontrol() {
       MoveMogo();
       MoveArm();
       MoveClamp();
+      MoveLadyBrown();
 
       wait(20, msec);
     }
