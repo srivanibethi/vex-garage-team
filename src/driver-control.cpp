@@ -1,6 +1,7 @@
 #include "vex.h"
 #include <iostream>
 #include <cstdlib>
+#include "auton.h"
 using namespace vex;
 #include "robot-config.hpp"
 
@@ -64,19 +65,34 @@ static void MoveDoinker(){
   }
 }
 
-int mogo = 0;
+int mogoState = 0;  // Renamed to avoid conflict with clampState
+static bool R2Pressed = false;
 static void MoveMogo() {
+    // Check if R2 is currently being pressed
     if(Controller.ButtonR2.pressing()) {
-        mogo += 1;
-        if(mogo%2 == 1) {
-            P.set(true);
-            wait(150, msec);
+        // Only take action if button wasn't pressed in the previous iteration
+        if(!R2Pressed) {
+            R2Pressed = true;
+            // Toggle between hold and release
+            mogoState = 1 - mogoState; // Toggle between 0 and 1
+            
+            if(mogoState == 1) {
+                // Close/hold the clamp
+                P.set(true);
+                Brain.Screen.clearScreen();
+                Brain.Screen.setCursor(1, 1);
+                Brain.Screen.print("Clamp: HOLDING");
+            } else {
+                // Release the clamp
+                P.set(false);
+                Brain.Screen.clearScreen();
+                Brain.Screen.setCursor(1, 1);
+                Brain.Screen.print("Clamp: RELEASED");
+            }
         }
-
-        if(mogo%2 == 0) {
-            P.set(false);
-            wait(150, msec);
-        }
+    } else {
+        // Reset the pressed state when the button is released
+        R2Pressed = false;
     }
 }
 
@@ -121,18 +137,85 @@ static void MoveLadyBrown() {
 }
 
 
-void drivercontrol() {
-    // Removed duplicate velocity setting - now handled in MoveIntake function
-    while(true){
-      MoveDrivetrain();
-      MoveIntake();
-      MoveDoinker();
-      MoveMogo();
-      MoveArm();
-      MoveClamp();
-      MoveLadyBrown();
+// Add skills autonomous function declaration
+extern void skillsAutonomous(void);
+bool autonRunning = false;
 
-      wait(20, msec);
+// Function to check if a specific button combination is pressed to trigger skills autonomous
+static void CheckAutonTrigger() {
+    static bool buttonPressed = false;
+    
+    // Press X + Y buttons simultaneously to trigger skills autonomous
+    if(Controller.ButtonX.pressing() && Controller.ButtonY.pressing()) {
+        if (!buttonPressed && !autonRunning) {
+            buttonPressed = true;
+            
+            // Display message on controller
+            Controller.Screen.clearScreen();
+            Controller.Screen.setCursor(1, 1);
+            Controller.Screen.print("Running Skills Mode");
+            
+            // Display message on brain
+            Brain.Screen.clearScreen();
+            Brain.Screen.setCursor(1, 1);
+            Brain.Screen.print("Starting Skills Autonomous");
+            
+            // Set flag to prevent multiple triggers
+            autonRunning = true;
+            
+            // Run the skills autonomous routine directly
+            skillsAutonomous();
+            
+            // Reset flag after autonomous is done
+            autonRunning = false;
+            
+            // Display completion message
+            Controller.Screen.clearScreen();
+            Controller.Screen.setCursor(1, 1);
+            Controller.Screen.print("Skills Complete");
+            Controller.Screen.setCursor(2, 1);
+            Controller.Screen.print("Back to driving");
+            
+            Brain.Screen.clearScreen();
+            Brain.Screen.setCursor(1, 1);
+            Brain.Screen.print("Skills autonomous complete");
+            Brain.Screen.setCursor(2, 1);
+            Brain.Screen.print("Back to driver control");
+            
+            // Wait briefly to avoid immediate re-triggering
+            wait(500, msec);
+        }
+    } else {
+        // Reset when buttons are released
+        buttonPressed = false;
+    }
+}
+
+void drivercontrol() {
+    // Initialize driver control
+    Controller.Screen.clearScreen();
+    Controller.Screen.setCursor(1, 1);
+    Controller.Screen.print("Driver Control");
+    Controller.Screen.setCursor(2, 1);
+    Controller.Screen.print("X+Y: Run Skills Mode");
+    
+    // Main control loop
+    while(true) {
+        // Check for autonomous trigger before normal controls
+        CheckAutonTrigger();
+        
+        // Only process normal controls if autonomous is not running
+        if(!autonRunning) {
+            MoveDrivetrain();
+            MoveIntake();
+            MoveDoinker();
+            MoveMogo();
+            MoveArm();
+            MoveClamp();
+            MoveLadyBrown();
+        }
+
+        wait(20, msec);
     }
 }
 
