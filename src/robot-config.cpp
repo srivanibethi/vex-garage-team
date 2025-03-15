@@ -27,4 +27,15 @@ motor LadyBrown = motor(PORT11, ratio6_1, false);
 
 inertial Inertial = inertial(PORT6);
 
-void vexcodeInit(void);
+void vexcodeInit(void) {
+  // Initialize motors and sensors
+  // Set brake modes for drive motors
+  LeftDrive.setStopping(brake);
+  RightDrive.setStopping(brake);
+  
+  // Set default velocities
+  LeftDrive.setVelocity(100, pct);
+  RightDrive.setVelocity(100, pct);
+  Intake.setVelocity(100, pct);
+  LadyBrown.setVelocity(100, pct);
+}
