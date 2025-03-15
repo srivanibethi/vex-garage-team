@@ -12,9 +12,7 @@ competition Competition;
 bool inauton = false;
 
 
-void vexcodeInit() {
-
-}
+// vexcodeInit function is now defined in robot-config.cpp
 
 void pre_auton(void) {
   vexcodeInit();
@@ -23,27 +21,44 @@ void pre_auton(void) {
 void autonomous(void) {
   inauton = true;
   
-  // Choose which autonomous routine to run
-  // AWPRed();    // Uncomment this line to run AWP Red autonomous
-  // AWPBlue();   // Uncomment this line to run AWP Blue autonomous
-  // Red();       // Uncomment this line to run Red autonomous
-  // Blue();      // Uncomment this line to run Blue autonomous
-  // AutonSkills(); // Uncomment this line to run Skills autonomous
+  // Display which autonomous is running
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1, 1);
+  Brain.Screen.print("Competition Skills Mode");
   
-  // Choose one of these autonomous functions:
-  //   TestPID();    // PID-based autonomous (more accurate)
-  // CustomAuton(); // Alternative time-based autonomous (simpler but less accurate)
+  // Run skills autonomous directly
+  skillsAutonomous();
   
   inauton = false;
 }
 
 int main() {
+  // Print a message to the brain's screen
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1, 1);
+  Brain.Screen.print("VEX Robot Starting...");
+  Brain.Screen.setCursor(2, 1);
+  Brain.Screen.print("Press X+Y for Skills Mode");
+  
+  // For normal competition use
   Competition.drivercontrol(drivercontrol);
   Competition.autonomous(autonomous);
 
+  // Run pre-autonomous function
   pre_auton();
   
+  // If in competition mode, we'll let the competition switch control things
+  if(Competition.isCompetitionSwitch()) {
+    while(true) {
+      wait(100, msec);
+    }
+  }
+  
+  // If not in competition mode, start driver control immediately
+  drivercontrol();
+  
+  // This should never be reached, but just in case
   while(true) {
-    wait(20, msec);
+    wait(100, msec);
   }
 }
