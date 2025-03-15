@@ -22,6 +22,7 @@ extern motor Intake2;
 extern motor_group Intake;
 extern rotation Rotation;
 extern motor WallStake;
+extern motor LadyBrown;
 
 extern inertial Inertial;
 
