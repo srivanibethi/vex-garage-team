@@ -1,385 +1,248 @@
+// Include required headers
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
+#include <string.h>
 #include "vex.h"
+#include "auton.h" // Include auton.h first to get the AutonMode definition
+
+using namespace vex;
+
+// Define the current autonomous mode used by all parts of the program
+// Change this value when uploading to different brain slots
+const AutonMode CURRENT_AUTON_MODE = AUTON_MODE_SKILLS;
+
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       auton.cpp                                                 */
+/*    Description:  Autonomous routines for VEX robot                         */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
 #include "auton.h"
+#include <thread>   // For threads
+#include <future>  // For async tasks 
 #include <iostream>
-#include "robot-config.hpp"
+#include <string.h>
+#include "robot-config.hpp" // Include robot configuration
 
-/*void drivePID(double k, double taui, double taud, double tolerance, double target) {
-    double setpoint = target;
-    double leftprocessvalue = LeftDrive.position(turns) * M_PI * 3.25 * 0.75;
-    double rightprocessvalue = RightDrive.position(turns) * M_PI * 3.25 * 0.75;
-    
-    double plefterror = 0;
-    double lefterror = 0;
-    double leftreset = 0;
-    double lefttotal = 0;
+// Use references to existing motor groups for autonomous functions
+// This avoids duplicate definitions 
 
-    double prighterror = 0;
-    double righterror = 0;
-    double rightreset = 0;
-    double righttotal = 0;
+// Function to move the robot forward (time-based)
+void goForward(double time, int speed) {
+  LeftDrive.spin(forward, speed, pct);
+  RightDrive.spin(forward, speed, pct);
+  wait(time, sec); 
+  LeftDrive.stop();
+  RightDrive.stop(); 
+}
 
-    while(((fabs(lefterror) + fabs(righterror))/2) > tolerance) {
-        lefterror = setpoint - leftprocessvalue;
-        righterror = setpoint - rightprocessvalue;
-        
-        leftreset += ((k/taui) * lefterror) * 50;
-        rightreset += ((k/taui) * righterror) * 50;
+void goBackward(double time, int speed) {
+  LeftDrive.spin(reverse, speed, pct);
+  RightDrive.spin(reverse, speed, pct);
+  wait(time, sec); 
+  LeftDrive.stop();
+  RightDrive.stop(); 
+}
 
-        lefttotal = k * lefterror + leftreset + ((plefterror - lefterror) * (k/taud));
-        righttotal = k * righterror + rightreset + ((prighterror - righterror) * (k/taud));
+// Function to turn the robot (time-based)
+void turnLeft(double time, int speed) {
+  LeftDrive.spin(forward, speed, pct);
+  RightDrive.spin(reverse, speed, pct);
+  wait(time, sec); 
+  LeftDrive.stop();
+  RightDrive.stop();
+}
 
-        LeftDrive.spin(forward, lefttotal, pct);
-        RightDrive.spin(forward, righttotal, pct);
+// Function to turn the robot (time-based)
+void turnRight(double time, int speed) {
+  LeftDrive.spin(reverse, speed, pct);
+  RightDrive.spin(forward, speed, pct);
+  wait(time, sec); 
+  LeftDrive.stop();
+  RightDrive.stop();
+}
 
-        plefterror = lefterror;
-        prighterror = righterror;
+// Function to run the intake
+void runIntake(int speed) {
+  Intake.spin(forward, speed, pct); 
+}
 
-        wait(20, msec);
+void stopIntake() {
+  Intake.stop();
+}
+
+// Function to score rings
+void scoreRings() {
+  goForward(-1, 100); 
+
+  LadyBrown.spin(forward, 100, pct); 
+  wait(1, sec); 
+  LadyBrown.stop(); 
+}
+
+void redPositiveAutonomous() {
+  turnRight(0.2, 50);
+  goBackward(1.6, 20);
+  turnLeft(0.3, 50);
+  goBackward(0.8, 40);
+  P.set(true); // Use P from robot-config.hpp instead of ClawPiston
+  wait(1, sec); 
+  runIntake(70);
+  stopIntake();
+  turnRight(0.56, 50);
+  wait(1, sec); 
+  auto driveForwardWrapper = []() { goForward(1, 40); };
+  thread driveThread(driveForwardWrapper);
+  driveThread.detach();
+  auto runIntakeWrapper = []() { runIntake(50); };
+  thread intakeThread(runIntakeWrapper);
+  intakeThread.detach();
+  wait(1, sec);
+  turnRight(0.1, 50);
+  wait(1, sec);
+  goBackward(1.5, 40);
+  wait(5, sec);
+  stopIntake(); 
+}
+
+void bluePositiveAutonomous() {
+    turnLeft(0.2, 50);
+    goBackward(1.1, 20);
+    turnRight(0.25, 50);
+    goBackward(0.9, 40);
+    P.set(true);  // Use P from robot-config.hpp
+    wait(1, sec); 
+    runIntake(70);
+    stopIntake();
+    turnLeft(0.43, 50); 
+    auto driveForwardWrapper = []() { goForward(0.8, 50); };
+    thread driveThread(driveForwardWrapper);
+    driveThread.detach();
+    auto runIntakeWrapper = []() { runIntake(50); };
+    thread intakeThread(runIntakeWrapper);
+    intakeThread.detach();
+    wait(1, sec); 
+    turnRight(0.25, 50);
+    wait(5, sec);
+    goBackward(1.5, 50);
+    wait(3, sec);
+    stopIntake(); 
+}
+
+void RedNegativeAutonomous() {
+  goBackward(1.03, 25);
+  turnLeft(0.16, 50);
+  goBackward(0.43, 30);
+  P.set(true);  // Use P from robot-config.hpp
+  wait(1, sec); 
+  runIntake(70);
+  wait(1, sec);
+  stopIntake();
+  turnLeft(0.28, 50); 
+  auto driveForwardWrapper = []() { goForward(1.13, 40); };
+  thread driveThread(driveForwardWrapper);
+  driveThread.detach();
+  auto runIntakeWrapper = []() { runIntake(70); };
+  thread intakeThread(runIntakeWrapper);
+  intakeThread.detach();
+  wait(1, sec); 
+  goBackward(.53, 25);
+  turnLeft(0.46, 50); 
+  auto driveForwardWrapper2 = []() { goForward(0.75, 40); };
+  thread driveThread2(driveForwardWrapper2);
+  driveThread2.detach();
+  auto runIntakeWrapper2 = []() { runIntake(70); };
+  thread intakeThread2(runIntakeWrapper2);
+  intakeThread2.detach();
+  wait(1, sec); 
+  goForward(.53, 25);
+  turnLeft(0.56, 50); 
+  goBackward(1.53, 25);
+  /*wait(1, sec); 
+  stopIntake(); */
+}
+
+// Skills autonomous routine
+void skillsAutonomous() {
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("Running Skills Autonomous");
+  
+  // Make sure clamp is released at the start
+  P.set(false);
+  
+  // Start by running the intake
+  runIntake(60);
+  wait(1, sec); 
+  
+  // Execute movement pattern
+  goForward(0.48, 50);
+  turnLeft(0.34, 50);
+  goBackward(0.55, 50);
+
+  // Stop the intake before finishing
+  stopIntake();
+  
+  // Final message
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("Skills Autonomous Complete");
+}
+
+void SimpleAutonomous(const char* position) {
+  // For backwards compatibility with existing code
+  if (strcmp(position, "0") == 0) {
+    redPositiveAutonomous();
+  } else if (strcmp(position, "1") == 0) {
+    bluePositiveAutonomous();
+  } else if (strcmp(position, "2") == 0) {
+    RedNegativeAutonomous();
+  } else if (strcmp(position, "3") == 0 || strcmp(position, "skills") == 0) {
+    skillsAutonomous();
+  }
+}
+
+// Define descriptive names for each autonomous mode
+const char* const AUTON_MODE_NAMES[AUTON_MODE_COUNT] = {
+    "Red Alliance Positive",
+    "Blue Alliance Positive",
+    "Red Alliance Negative",
+    "Skills Challenge"
+};
+
+void autonomousRunner(const char* input) {
+    if (input && input[0]) {
+        int modeValue = input[0] - '0';
+        if (modeValue >= 0 && modeValue < AUTON_MODE_COUNT) {
+            AutonMode mode = static_cast<AutonMode>(modeValue);
+            
+            Brain.Screen.clearScreen();
+            Brain.Screen.setCursor(1,1);
+            Brain.Screen.print("Running: %s", AUTON_MODE_NAMES[mode]);
+            
+            switch (mode) { 
+                case AUTON_MODE_RED_POSITIVE:
+                    redPositiveAutonomous(); 
+                    break;
+                case AUTON_MODE_BLUE_POSITIVE:
+                    bluePositiveAutonomous();
+                    break;
+                case AUTON_MODE_RED_NEGATIVE:
+                    RedNegativeAutonomous();
+                    break;
+                case AUTON_MODE_SKILLS:
+                    skillsAutonomous();
+                    break;
+                default:
+                    // Should never reach here
+                    Brain.Screen.clearScreen();
+                    Brain.Screen.setCursor(1,1);
+                    Brain.Screen.print("Invalid autonomous mode");
+                    break;
+            }
+        }
     }
-
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-
-    wait(100, msec);
-}
-
-static double getError(double target) {
-    if((std::max(target, Inertial.heading()) - std::min(target, Inertial.heading())) > 180) {
-        if(std::min(target, Inertial.heading()) == target) {
-            return (360 - std::max(target, Inertial.heading()) + std::min(target, Inertial.heading()));
-        }
-        else {
-            return -(360 - std::max(target, Inertial.heading()) + std::min(target, Inertial.heading()));
-        }
-    }
-    else {
-        return (target - Inertial.heading());
-    }
-}
-
-static void turnPID(double k, double taui, double taud, double tolerance, double target) {
-    double setpoint = target;
-    double processvalue = target - getError(target);
-
-    double perror = 0;
-    double error = 0;
-    double reset = 0;
-    double total = 0;
-
-    while(error > tolerance) {
-        error = setpoint - processvalue;
-        reset += ((k/taui) * error) * 50;
-        total = k * error + reset + ((perror - error) * (k/taud));
-
-        LeftDrive.spin(forward, total, pct);
-        RightDrive.spin(reverse, total, pct);
-
-        perror = error;
-
-        wait(20, msec);
-    }
-
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-
-    wait(100, msec);
-}*/
-
-static void drivePID(double kp, double ki, double kd, double target) {
-    double lefterror = target;
-    double plefterror = lefterror;
-    double leftd = 0;
-    double lefti = 0;
-    double reallefti = 0;
-    double plefttotal = 0;
-    double lefttotal = 0;
-    double leftsaturation = 0;
-    double leftsign = 0;
-
-    double righterror = target;
-    double prighterror = righterror;
-    double rightd = 0;
-    double righti = 0;
-    double realrighti = 0;
-    double prighttotal = 0;
-    double righttotal = 0;
-    double rightsaturation = 0;
-    double rightsign = 0;
-    
-    LeftDrive.resetPosition();
-    RightDrive.resetPosition();
-    
-    while((fabs(lefterror) + fabs(righterror)) / 2 > 0.5) {
-        lefterror = target - LeftDrive.position(turns) * 3.25 * M_PI * 0.75;
-        righterror = target - RightDrive.position(turns) * 3.25 * M_PI * 0.75;
-        
-        leftd = (lefterror - plefterror) * 40;
-        rightd = (righterror - prighterror) * 40;
-        
-        lefttotal = lefterror * kp + lefti * ki - leftd * kd;
-        righttotal = righterror * kp + righti * ki - rightd * kd;
-
-        if(plefttotal == lefttotal) {
-            leftsaturation = 0;
-        }
-        else {
-            leftsaturation = 1;
-        }
-        if((plefttotal < 0) && (lefttotal < 0)) {
-            leftsign = -1;
-        }
-        else {
-            leftsign = 1;
-        }
-
-        if(prighttotal == righttotal) {
-            rightsaturation = 0;
-        }
-        else {
-            rightsaturation = 1;
-        }
-        if((plefttotal < 0) && (lefttotal < 0)) {
-            rightsign = -1;
-        }
-        else {
-            rightsign = 1;
-        }
-
-        LeftDrive.spin(forward, lefttotal, pct);
-        RightDrive.spin(forward, righttotal, pct);
-
-        if((leftsaturation == 1) || (leftsign == 1 )) {
-            lefti = 0;
-        }
-        else {
-           lefti = reallefti; 
-        }
-        if(fabs(lefterror) < 10) {
-            reallefti += lefterror / 50;
-        }
-        
-        if((rightsaturation == 1) || (rightsign == 1 )) {
-            righti = 0;
-        }
-        else {
-          righti = realrighti;  
-        }
-        if(fabs(righterror) < 10) {
-            realrighti += righterror / 50;
-        }
-
-        plefterror = lefterror;
-        prighterror = righterror;
-
-        wait(20, msec);
-    }
-
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-
-    wait(100, msec);
-}
-
-static double geterror(double target) {
-    if((std::max(target, Inertial.heading()) - std::min(target, Inertial.heading())) > 180) {
-        if(std::min(target, Inertial.heading()) == target) {
-            return (360 - std::max(target, Inertial.heading()) + std::min(target, Inertial.heading()));
-        }
-        else {
-            return -(360 - std::max(target, Inertial.heading()) + std::min(target, Inertial.heading()));
-        }
-    }
-    else {
-        return (target - Inertial.heading());
-    }
-}
-
-static void turnPID(double kp, double ki, double kd, double target) {
-    double error = geterror(target);
-    double perror = error;
-    double d = 0;
-    double i = 0;
-    double reali = 0;
-    double ptotal  = 0;
-    double total = 0;
-    double saturation = 0;
-    double sign = 0;
-    //Bohan is the sigmest rookie this year asdfasdfasdfasdfasdfasdfasdf
-    while(fabs(error) > 1 || (d > 3)) {
-        error = geterror(target);
-        d = (error - perror) * 40;
-        ptotal = total;
-        total = error * kp + i * ki - d * kd;
-        if(ptotal == total) {
-            saturation = 0;
-        }
-        else {
-            saturation = 1;
-        }
-        if((ptotal < 0) && (total < 0)) {
-            sign = -1;
-        }
-        else {
-            sign = 1;
-        }
-        
-        LeftDrive.spin(forward, total, pct);
-        RightDrive.spin(reverse, total, pct);
-
-        if((saturation == 1) && (sign == 1)) {
-            i = 0;
-        }
-        else {
-            i = reali;
-        }
-        if(fabs(error) < 20) {
-            i += error/50;
-        }
-        
-        perror = error;
-
-        wait(20, msec);
-    }
-
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-
-    wait(100, msec);
-}
-
-static void drive(std::string direction, double target) {
-    if(direction == "forward") {            
-        drivePID(1.8, 0.001, 0.75, target);
-    }
-
-    if(direction == "reverse") {
-        drivePID(1.8, 0.001, 0.75, -target);
-    }
-}
-
-static void turn(double target) {
-    turnPID(0.42, 0.001, 0, target);
-}
-
-void AWPRed() {
-    turn(90);
-}
-
-void AWPBlue() {
-
-}
-
-void Red() {
-
-}
-
-void Blue() {
-
-}
-
-void AutonSkills() {
-
-}
-
-void TestPID() {
-    // Initial setup
-    Intake.setVelocity(100, pct);
-  
-    // Step 1: Drive forward to approach the scoring location
-    drive("forward", 20); // Drive forward 20 inches
-  
-    // Step 2: Score a ring using the intake
-    Intake.spin(reverse); // Eject the ring
-    wait(500, msec);
-    Intake.stop();
-  
-    // Step 3: Turn right towards the center tower
-    turn(90); // Turn 90 degrees right
-  
-    // Step 4: Drive forward to touch center tower
-    drive("forward", 15); // Drive forward 15 inches to reach tower
-    wait(300, msec); // Brief wait to ensure contact
-  
-    // Step 5: Back away from tower
-    drive("reverse", 10); // Back up 10 inches
-  
-    // Step 6: Turn towards corner
-    turn(135); // Turn to face corner
-  
-    // Step 7: Drive to corner with mobile goal
-    drive("forward", 25); // Drive to corner
-  
-    // Step 8: Secure the mobile goal using pneumatic
-    P.set(true); // Activate pneumatic to secure the mobile goal
-  
-    // Step 9: Small adjustment to position better in corner
-    drive("forward", 2); // Fine adjustment
-}
-
-// Alternative autonomous function approach (without PID functions)
-void CustomAuton() {
-    // Initial setup
-    Intake.setVelocity(100, pct);
-    LeftDrive.setVelocity(50, pct);
-    RightDrive.setVelocity(50, pct);
-  
-    // Move forward to approach scoring location
-    LeftDrive.spin(forward);
-    RightDrive.spin(forward);
-    wait(2000, msec);  // Time-based movement instead of PID
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-  
-    // Score a ring using the intake
-    Intake.spin(reverse);
-    wait(500, msec);
-    Intake.stop();
-  
-    // Turn right towards the center tower
-    LeftDrive.spin(forward);
-    RightDrive.spin(reverse);
-    wait(1000, msec);  // Time-based turning
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-  
-    // Drive forward to touch center tower
-    LeftDrive.spin(forward);
-    RightDrive.spin(forward);
-    wait(1500, msec);
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-    
-    // Brief wait to ensure contact
-    wait(300, msec);
-  
-    // Back away from tower
-    LeftDrive.spin(reverse);
-    RightDrive.spin(reverse);
-    wait(1000, msec);
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-  
-    // Turn towards corner
-    LeftDrive.spin(forward);
-    RightDrive.spin(reverse);
-    wait(1300, msec);  // ~135 degrees based on timing
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-  
-    // Drive to corner with mobile goal
-    LeftDrive.spin(forward);
-    RightDrive.spin(forward);
-    wait(2500, msec);
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
-  
-    // Secure the mobile goal using pneumatic
-    P.set(true);
-  
-    // Optional: small adjustment to position better in corner
-    LeftDrive.spin(forward);
-    RightDrive.spin(forward);
-    wait(200, msec);  // Small movement
-    LeftDrive.stop(brake);
-    RightDrive.stop(brake);
 }
